@@ -94,7 +94,8 @@ router.patch("/assign/:id", async (req, res) => {
     if (!staffName || !staffId) {
       return res.status(400).json({ message: "staffName and staffId are required" });
     }
-
+    //console.log(staffName);
+    
     const ticket = await Ticket.findById(req.params.id);
     if (!ticket) return res.status(404).json({ message: "Ticket not found" });
 
