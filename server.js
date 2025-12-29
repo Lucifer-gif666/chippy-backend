@@ -17,9 +17,18 @@ dotenv.config();
 const app = express();
 
 // Middleware
-app.use(cors({ origin: "https://chippyticketing.netlify.app",
-  credentials: true,}));
+app.use(
+  cors({
+    origin: [
+      "https://chippyticketing.netlify.app",
+      "http://localhost:5173",
+    ],
+    credentials: true,
+  })
+);
+
 app.use(express.json());
+
 
 // Routes
 app.use("/api/auth", authRoutes);
