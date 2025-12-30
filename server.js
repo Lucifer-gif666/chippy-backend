@@ -53,7 +53,7 @@ mongoose
 
     setInterval(async () => {
       try {
-        const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000); // 24 hours ago
+        const cutoff = new Date(Date.now() - 3 * 60 * 60 * 1000); // 24 hours ago
 
         // Delete old notifications
         const result = await Notification.deleteMany({ createdAt: { $lt: cutoff } });
