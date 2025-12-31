@@ -20,7 +20,7 @@ const app = express();
 app.use(
   cors({
     origin: [
-      "https://chippyticketing.netlify.app",
+      "https://chippy-ticketing-system.pages.dev",
       "http://localhost:5173",
     ],
     credentials: true,
@@ -53,7 +53,7 @@ mongoose
 
     setInterval(async () => {
       try {
-        const cutoff = new Date(Date.now() - 3 * 60 * 60 * 1000); // 24 hours ago
+        const cutoff = new Date(Date.now() - 72 * 60 * 60 * 1000); // 24 hours ago
 
         // Delete old notifications
         const result = await Notification.deleteMany({ createdAt: { $lt: cutoff } });
