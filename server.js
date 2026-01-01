@@ -14,37 +14,24 @@ import Notification from "./models/Notifications.js";
 
 
 dotenv.config();
-
 const app = express();
 
-// ✅ CORS FIRST
-app.use((req, res, next) => {
-  res.setHeader(
-    "Access-Control-Allow-Origin",
-    "https://chippy-ticketing-system.pages.dev"
-  );
-  res.setHeader("Access-Control-Allow-Credentials", "true");
-  res.setHeader(
-    "Access-Control-Allow-Headers",
-    "Origin, X-Requested-With, Content-Type, Accept, Authorization"
-  );
-  res.setHeader(
-    "Access-Control-Allow-Methods",
-    "GET, POST, PUT, PATCH, DELETE, OPTIONS"
-  );
-
-  if (req.method === "OPTIONS") {
-    return res.sendStatus(200);
-  }
-
-  next();
-});
+// Middleware
+app.use(
+  cors({
+    origin: [
+      "https://chippy-ticketing-system.pages.dev",
+      "http://localhost:5173",
+    ],
+    credentials: true,
+  })
+);
 
 app.use(express.json());
 
-// routes AFTER
-app.use("/api/auth", authRoutes);
 
+// Routes
+app.use("/api/auth", authRoutes);
 app.use("/api/tickets", ticketRoutes);
 app.use("/api/zones", zoneRoutes);
 app.use("/api/staff", staffRoutes);
@@ -82,8 +69,4 @@ mongoose
 
 // Start server
 const PORT = process.env.PORT || 5000;
-
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-});
-
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));

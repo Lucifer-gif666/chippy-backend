@@ -88,7 +88,7 @@ router.post("/login", async (req, res) => {
     res.json({
       message: "Login successful",
       token,
-      user: { _id: user._id, name: user.name, email: user.email, role: user.role },
+      user: { _id:user._id, name: user.name, email: user.email, role: user.role },
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -177,7 +177,7 @@ router.post("/set-password", async (req, res) => {
     if (!user)
       return res.status(404).json({ message: "User not found" });
 
-    user.password = password;
+    user.password = password; // important: let mongoose hash automatically
     await user.save();
 
     const token = jwt.sign(
@@ -198,20 +198,15 @@ router.post("/set-password", async (req, res) => {
 
 
 // ===============================
-//        FORGOT PASSWORD (FIXED)
+//        FORGOT PASSWORD
 // ===============================
 router.post("/forgot-password", async (req, res) => {
   try {
     const { email } = req.body;
 
-    if (!email) {
-      return res.status(400).json({ message: "Email is required" });
-    }
-
     const user = await User.findOne({ email });
-    if (!user) {
+    if (!user)
       return res.status(404).json({ message: "User not found" });
-    }
 
     const token = jwt.sign(
       { id: user._id },
@@ -220,10 +215,6 @@ router.post("/forgot-password", async (req, res) => {
     );
 
     resetTokens[token] = user._id;
-
-    if (!process.env.CLIENT_URL) {
-      throw new Error("CLIENT_URL is not defined");
-    }
 
     const resetLink = `${process.env.CLIENT_URL}/reset-password?token=${token}`;
 
@@ -235,28 +226,26 @@ router.post("/forgot-password", async (req, res) => {
       },
     });
 
-    await transporter.verify(); // 🔥 important debug line
-
-    await transporter.sendMail({
-      from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
+    const mailOptions = {
+      from: process.env.EMAIL_FROM,
       to: email,
       subject: "Password Reset Request",
       html: `
         <p>Hello ${user.name},</p>
-        <p>You requested a password reset.</p>
+        <p>You requested a password reset. Click the link below:</p>
         <a href="${resetLink}" target="_blank">Reset Password</a>
         <p>This link expires in 15 minutes.</p>
-        <p>If you didn’t request this, you can ignore this email.</p>
       `,
-    });
+    };
+
+    await transporter.sendMail(mailOptions);
 
     res.json({
       message: "Password reset email sent. Check your inbox.",
+      resetLink,
     });
-
   } catch (err) {
-    console.error("FORGOT PASSWORD ERROR:", err);
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Server error" });
   }
 });
 
