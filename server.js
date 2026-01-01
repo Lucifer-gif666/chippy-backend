@@ -14,24 +14,37 @@ import Notification from "./models/Notifications.js";
 
 
 dotenv.config();
+
 const app = express();
 
-// Middleware
-app.use(
-  cors({
-    origin: [
-      "https://chippy-ticketing-system.pages.dev",
-      "http://localhost:5173",
-    ],
-    credentials: true,
-  })
-);
+// ✅ CORS FIRST
+app.use((req, res, next) => {
+  res.setHeader(
+    "Access-Control-Allow-Origin",
+    "https://chippy-ticketing-system.pages.dev"
+  );
+  res.setHeader("Access-Control-Allow-Credentials", "true");
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+  );
+  res.setHeader(
+    "Access-Control-Allow-Methods",
+    "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+  );
+
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200);
+  }
+
+  next();
+});
 
 app.use(express.json());
 
-
-// Routes
+// routes AFTER
 app.use("/api/auth", authRoutes);
+
 app.use("/api/tickets", ticketRoutes);
 app.use("/api/zones", zoneRoutes);
 app.use("/api/staff", staffRoutes);
