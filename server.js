@@ -20,17 +20,12 @@ const app = express();
 app.use(
   cors({
     origin: [
-      "https://chippy-ticketing-system.pages.dev",
+      "https://chippyticketing.netlify.app",
       "http://localhost:5173",
     ],
     credentials: true,
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
-
-// 🔥 THIS LINE FIXES IT
-app.options("*", cors());
 
 app.use(express.json());
 
