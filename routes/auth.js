@@ -174,22 +174,27 @@ router.post("/set-password", async (req, res) => {
     const { email, password } = req.body;
 
     const user = await User.findOne({ email });
-    if (!user)
-      return res.status(404).json({ message: "User not found" });
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found. Please contact admin.",
+      });
+    }
 
-    user.password = password; // important: let mongoose hash automatically
+    // 🚫 HARD BLOCK — signup only
+    if (user.passwordSet) {
+      return res.status(409).json({
+        message:
+          "Password already set. Please login or use Forgot Password.",
+      });
+    }
+
+    // ✅ First-time setup
+    user.password = password;
+    user.passwordSet = true;
     await user.save();
 
-    const token = jwt.sign(
-      { id: user._id, role: user.role },
-      process.env.JWT_SECRET,
-      { expiresIn: "1d" }
-    );
-
-    res.json({
-      message: "Password set successfully",
-      token,
-      user: { name: user.name, email: user.email, role: user.role },
+    return res.json({
+      message: "Password set successfully. Please login.",
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
