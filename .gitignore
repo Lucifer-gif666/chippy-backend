@@ -1,6 +1,10 @@
 # Node
 node_modules/
 
+#firebase
+firebase-service-account.json/
+
+
 # Environment variables
 .env
 .env.*

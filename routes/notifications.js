@@ -1,6 +1,8 @@
 import express from "express";
 import mongoose from "mongoose";
 import Notification from "../models/Notifications.js";
+import User from "../models/User.js";
+import { sendPushNotification } from "../firebaseAdmin.js";
 
 const router = express.Router();
 
@@ -15,10 +17,9 @@ router.get("/", async (req, res) => {
 
     const staffObjectId = new mongoose.Types.ObjectId(staffId);
 
-    // Fetch notifications that are global or user-specific AND not read by this user
     const notifications = await Notification.find({
       $or: [{ userId: null }, { userId: staffObjectId }],
-      readBy: { $ne: staffObjectId }
+      readBy: { $ne: staffObjectId },
     }).sort({ createdAt: -1 });
 
     res.json(notifications);
@@ -40,13 +41,60 @@ router.patch("/:id/read", async (req, res) => {
     const staffObjectId = new mongoose.Types.ObjectId(staffId);
 
     await Notification.findByIdAndUpdate(req.params.id, {
-      $addToSet: { readBy: staffObjectId }
+      $addToSet: { readBy: staffObjectId },
     });
 
     res.json({ message: "Notification marked as read" });
   } catch (err) {
     console.error("Error marking notification:", err);
     res.status(500).json({ message: "Error updating notification" });
+  }
+});
+
+/**
+ * POST /api/notifications/send
+ * Create DB notification + send PUSH notification
+ */
+router.post("/send", async (req, res) => {
+  try {
+    const { userId, title, message, url } = req.body;
+
+    if (!title || !message) {
+      return res.status(400).json({ message: "Title and message are required" });
+    }
+
+    // 1️⃣ Create notification in DB (for in-app popup)
+    const notification = await Notification.create({
+      userId: userId || null,
+      message,
+      url: url || "/",
+      readBy: [],
+    });
+
+    // 2️⃣ Send PUSH notification (if userId exists)
+    if (userId) {
+      const user = await User.findById(userId);
+
+      if (user?.fcmToken) {
+        await sendPushNotification({
+          token: user.fcmToken,
+          title,
+          body: message,
+          data: {
+            url: url || "/",
+            notificationId: notification._id.toString(),
+          },
+        });
+      }
+    }
+
+    res.json({
+      success: true,
+      notification,
+    });
+  } catch (err) {
+    console.error("Notification send error:", err);
+    res.status(500).json({ message: "Failed to send notification" });
   }
 });
 

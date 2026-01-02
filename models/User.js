@@ -7,8 +7,12 @@ const UserSchema = new mongoose.Schema({
   password: { type: String }, 
   role: { type: String, enum: ["admin", "staff"], default: "staff" },
   verified: { type: Boolean, default: false },
-  googleId: { type: String }
+  googleId: { type: String },
+
+  // 🔔 ADD THIS FOR PUSH NOTIFICATIONS
+  fcmToken: { type: String }
 });
+
 
 // PREVENT DOUBLE HASHING
 UserSchema.pre("save", async function (next) {
