@@ -283,26 +283,23 @@ router.post("/reset-password", async (req, res) => {
 });
 
 // ===============================
-//     SAVE FCM TOKEN (PUSH)
-// ===============================
-// ===============================
-//      SAVE FCM TOKEN
+//        SAVE FCM TOKEN
 // ===============================
 router.post("/save-fcm-token", async (req, res) => {
   try {
-    const authHeader = req.headers.authorization;
-
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return res.status(401).json({ message: "Unauthorized" });
-    }
-
-    const tokenFromHeader = authHeader.split(" ")[1];
-    const decoded = jwt.verify(tokenFromHeader, process.env.JWT_SECRET);
-
     const { token } = req.body;
+
     if (!token) {
       return res.status(400).json({ message: "FCM token missing" });
     }
+
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+      return res.status(401).json({ message: "Authorization header missing" });
+    }
+
+    const jwtToken = authHeader.split(" ")[1];
+    const decoded = jwt.verify(jwtToken, process.env.JWT_SECRET);
 
     await User.findByIdAndUpdate(decoded.id, {
       fcmToken: token,
@@ -315,6 +312,4 @@ router.post("/save-fcm-token", async (req, res) => {
   }
 });
 
-
-// ===============================
 export default router;

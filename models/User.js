@@ -10,7 +10,7 @@ const UserSchema = new mongoose.Schema({
   googleId: { type: String },
 
   // 🔔 ADD THIS FOR PUSH NOTIFICATIONS
-  fcmToken: { type: String }
+  fcmToken: { type: String },
 });
 
 
