@@ -11,14 +11,19 @@ if (!admin.apps.length) {
 
 // 🔔 Send push notification
 export const sendPushNotification = async ({ token, title, body, data }) => {
-  const message = {
-    token,
-    notification: {
-      title,
-      body,
-    },
-    data: data || {},
+    const message = {
+      token,
+      notification: { title, body },
+      android: {
+        priority: "high",
+        notification: {
+          sound: "default",
+          channelId: "chippy-alerts",
+        },
+      },
+      data: data || {},
+    };
+  
+    return admin.messaging().send(message);
   };
-
-  return admin.messaging().send(message);
-};
+  
