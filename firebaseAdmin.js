@@ -1,12 +1,15 @@
 import admin from "firebase-admin";
-import serviceAccount from "./firebase-service-account.json" assert { type: "json" };
 
+// 🔐 Load service account from ENV (safe for Render)
 if (!admin.apps.length) {
   admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
+    credential: admin.credential.cert(
+      JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT)
+    ),
   });
 }
 
+// 🔔 Send push notification
 export const sendPushNotification = async ({ token, title, body, data }) => {
   const message = {
     token,
