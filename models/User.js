@@ -9,8 +9,9 @@ const UserSchema = new mongoose.Schema({
   verified: { type: Boolean, default: false },
   googleId: { type: String },
 
-  // 🔔 ADD THIS FOR PUSH NOTIFICATIONS
+  // 🔔 PUSH NOTIFICATIONS
   fcmToken: { type: String },
+  isPWAInstalled: { type: Boolean, default: false },
 });
 
 

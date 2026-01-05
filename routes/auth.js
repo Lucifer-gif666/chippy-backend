@@ -293,6 +293,12 @@ router.post("/save-fcm-token", async (req, res) => {
       return res.status(400).json({ message: "FCM token missing" });
     }
 
+    // Validate token format (FCM tokens are typically 100+ characters)
+    if (typeof token !== 'string' || token.length < 100) {
+      console.error('Invalid FCM token format:', token.substring(0, 20) + '...');
+      return res.status(400).json({ message: "Invalid FCM token format" });
+    }
+
     const authHeader = req.headers.authorization;
     if (!authHeader) {
       return res.status(401).json({ message: "Authorization header missing" });
@@ -301,14 +307,65 @@ router.post("/save-fcm-token", async (req, res) => {
     const jwtToken = authHeader.split(" ")[1];
     const decoded = jwt.verify(jwtToken, process.env.JWT_SECRET);
 
+    const user = await User.findById(decoded.id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Check if token is different from current one
+    const isNewToken = user.fcmToken !== token;
+
     await User.findByIdAndUpdate(decoded.id, {
       fcmToken: token,
     });
 
-    res.json({ success: true });
+    console.log(`FCM token ${isNewToken ? 'updated' : 'saved'} for user ${user.name} (${user._id})`);
+
+    res.json({
+      success: true,
+      message: isNewToken ? "FCM token updated" : "FCM token saved",
+      tokenPreview: token.substring(0, 20) + '...'
+    });
   } catch (err) {
     console.error("Save FCM token error:", err);
     res.status(500).json({ message: "Failed to save FCM token" });
+  }
+});
+
+// ===============================
+//        UPDATE PWA STATUS
+// ===============================
+router.post("/update-pwa-status", async (req, res) => {
+  try {
+    const { isInstalled } = req.body;
+
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+      return res.status(401).json({ message: "Authorization header missing" });
+    }
+
+    const jwtToken = authHeader.split(" ")[1];
+    const decoded = jwt.verify(jwtToken, process.env.JWT_SECRET);
+
+    const user = await User.findById(decoded.id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Update PWA installation status
+    user.isPWAInstalled = !!isInstalled;
+    await user.save();
+
+    console.log(`PWA status updated for ${user.name}: ${isInstalled ? 'installed' : 'not installed'}`);
+
+    res.json({
+      success: true,
+      message: `PWA status updated: ${isInstalled ? 'installed' : 'not installed'}`,
+      isPWAInstalled: user.isPWAInstalled
+    });
+  } catch (err) {
+    console.error("Update PWA status error:", err);
+    res.status(500).json({ message: "Failed to update PWA status" });
   }
 });
 

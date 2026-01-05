@@ -26,22 +26,42 @@ const generateTicketId = () => {
 
 // 🔥 BROADCAST PUSH TO ALL USERS
 const broadcastPush = async ({ title, body, url }) => {
+  console.log(`Broadcasting push notification to all users: ${title} - ${body}`);
+
   const users = await User.find({
     fcmToken: { $exists: true, $ne: null }
   });
 
+  console.log(`Found ${users.length} users with FCM tokens`);
+
+  let successCount = 0;
+  let failureCount = 0;
+
   for (const user of users) {
     try {
+      console.log(`Sending push to user ${user._id} (${user.name}): ${user.fcmToken.substring(0, 20)}...`);
       await sendPushNotification({
         token: user.fcmToken,
         title,
         body,
-        data: { url }
+        data: { url, userId: user._id.toString() }
       });
+      successCount++;
+      console.log(`✅ Push sent successfully to ${user.name}`);
     } catch (err) {
-      console.error("Push failed:", user._id, err.message);
+      failureCount++;
+      console.error(`❌ Push failed for user ${user._id} (${user.name}):`, err.message);
+
+      // If token is invalid/expired, clear it
+      if (err.code === 'messaging/registration-token-not-registered' ||
+          err.code === 'messaging/invalid-registration-token') {
+        console.log(`Clearing invalid FCM token for user ${user._id}`);
+        await User.findByIdAndUpdate(user._id, { $unset: { fcmToken: 1 } });
+      }
     }
   }
+
+  console.log(`Broadcast complete: ${successCount} successful, ${failureCount} failed`);
 };
 
 // ==================================================
