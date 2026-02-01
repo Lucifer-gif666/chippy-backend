@@ -48,14 +48,11 @@ router.post("/", async (req, res) => {
     // Notify all staff/admin
     const staffUsers = await User.find({ role: { $in: ["staff", "admin"] } });
     for (let user of staffUsers) {
-      const actorName = req.user.name;
-
       await Notification.create({
-        userId: adminId,
+        userId: user._id,
         ticketId: ticket.ticketId,
         type: "created",
-        message: `${actorName} created a ticket`,
-      
+        message: `${createdBy} created ticket ${ticket.ticketId}`,
         url: `/dashboard/ticket/${ticket.ticketId}`,
       });
     }
