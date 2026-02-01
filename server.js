@@ -21,6 +21,7 @@ app.use(
   cors({
     origin: [
       "https://chippy-ticketing-system.pages.dev",
+      "https://www.chippy-ticketing-system.pages.dev",
       "http://localhost:5173",
     ],
     credentials: true,
