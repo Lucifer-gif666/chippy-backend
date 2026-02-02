@@ -5,7 +5,11 @@
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String }, 
-    role: { type: String, enum: ["admin", "staff"], default: "staff" },
+    role: {
+      type: String,
+      enum: ["super_admin", "admin", "maintenance", "staff"],
+      default: "staff",
+    },    
     verified: { type: Boolean, default: false },
     googleId: { type: String },
 
