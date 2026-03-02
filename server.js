@@ -20,10 +20,13 @@ const app = express();
 app.use(
   cors({
     origin: [
+      "http://localhost:5173",
       "https://chippy-ticketing-system.pages.dev",
       "https://www.chippy-ticketing-system.pages.dev",
-      "http://localhost:5173",
+      "https://chippyguestcare.com",
+      "https://www.chippyguestcare.com"
     ],
+    methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   })
 );
