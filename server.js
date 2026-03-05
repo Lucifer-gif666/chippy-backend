@@ -26,7 +26,7 @@ app.use(
       "https://chippyguestcare.com",
       "https://www.chippyguestcare.com"
     ],
-    methods: ["GET", "POST", "PUT", "DELETE"],
+    methods: ["GET", "POST", "PUT", "PATCH" , "DELETE" , "OPTIONS"],
     credentials: true,
   })
 );
